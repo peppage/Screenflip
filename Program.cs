@@ -35,7 +35,15 @@ internal class MainForm : Form
     private static readonly Color _colorAqua = Color.FromArgb(125, 249, 255);
     private static readonly Color _colorInkBlack = Color.FromArgb(15, 17, 23);
 
+    // Tray/window icon accents, matching the site: blue when idle, orange in game mode.
+    private static readonly Color _iconIdleAccent = Color.FromArgb(91, 140, 255);   // #5B8CFF
+    private static readonly Color _iconActiveAccent = Color.FromArgb(255, 106, 61); // #FF6A3D
+
     private readonly NotifyIcon _trayIcon;
+    private readonly Icon _trayIconIdle;
+    private readonly Icon _trayIconActive;
+    private readonly Icon _windowIconIdle;
+    private readonly Icon _windowIconActive;
     private readonly ToolStripMenuItem _trayToggleItem;
     private readonly Button _toggleButton;
     private readonly Panel _accentBar;
@@ -54,7 +62,12 @@ internal class MainForm : Form
         ClientSize = new Size(280, 140);
         BackColor = _colorInkBlack;
         StartPosition = FormStartPosition.CenterScreen;
-        Icon = BuildIcon();
+
+        _windowIconIdle = BuildIcon(_iconIdleAccent, 32);
+        _windowIconActive = BuildIcon(_iconActiveAccent, 32);
+        _trayIconIdle = BuildIcon(_iconIdleAccent, 16);
+        _trayIconActive = BuildIcon(_iconActiveAccent, 16);
+        Icon = _windowIconIdle;
 
         _accentBar = new Panel
         {
@@ -129,7 +142,7 @@ internal class MainForm : Form
         _trayIcon = new NotifyIcon
         {
             Text = "ScreenFlip - Inactive",
-            Icon = BuildIcon(size: 16),
+            Icon = _trayIconIdle,
             ContextMenuStrip = trayMenu,
             Visible = true,
         };
@@ -227,6 +240,9 @@ internal class MainForm : Form
         _toggleButton.BackColor = statusColor;
         _trayToggleItem.Text = action;
         _trayIcon.Text = $"ScreenFlip - {state}";
+
+        Icon = _isActive ? _windowIconActive : _windowIconIdle;
+        _trayIcon.Icon = _isActive ? _trayIconActive : _trayIconIdle;
     }
 
     private static bool LoadOverlaySetting()
@@ -293,6 +309,10 @@ internal class MainForm : Form
         if (disposing)
         {
             _trayIcon.Dispose();
+            _trayIconIdle.Dispose();
+            _trayIconActive.Dispose();
+            _windowIconIdle.Dispose();
+            _windowIconActive.Dispose();
         }
 
         base.Dispose(disposing);
@@ -300,13 +320,28 @@ internal class MainForm : Form
 
     #region icon drawing
 
-    private static Icon BuildIcon(int size = 32)
+    private static Icon BuildIcon(Color accent, int size = 32)
     {
         using var stream = typeof(MainForm).Assembly
             .GetManifestResourceStream("ScreenFlip.screenflip-logo.svg")!;
-        var svgDoc = SvgDocument.Open<SvgDocument>(stream);
-        var bmp = svgDoc.Draw(size, size);
+        using var reader = new StreamReader(stream);
+        var svgText = RecolorSvg(reader.ReadToEnd(), accent);
+        var svgDoc = SvgDocument.FromSvg<SvgDocument>(svgText);
+        using var bmp = svgDoc.Draw(size, size);
         return Icon.FromHandle(bmp.GetHicon());
+    }
+
+    /// <summary>
+    /// Retints the logo's aqua brand color to <paramref name="accent"/> so the tray
+    /// icon reads blue when idle and orange while game mode is active.
+    /// </summary>
+    private static string RecolorSvg(string svg, Color accent)
+    {
+        var hex = $"#{accent.R:X2}{accent.G:X2}{accent.B:X2}";
+        var rgb = $"{accent.R},{accent.G},{accent.B}";
+        return svg
+            .Replace("#7DF9FF", hex, StringComparison.OrdinalIgnoreCase)
+            .Replace("125,249,255", rgb);
     }
 
     #endregion icon drawing
