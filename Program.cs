@@ -21,7 +21,7 @@ internal static class Program
     }
 }
 
-internal class MainForm : Form
+internal sealed class MainForm : Form
 {
     private static readonly string StateFile = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -486,7 +486,7 @@ internal class MainForm : Form
 /// <remarks>This form is intended to be displayed above all other windows
 /// and does not appear in the taskbar. Allows it be readable but
 /// less distracting for gaming.</remarks>
-internal class OverlayForm : Form
+internal sealed class OverlayForm : Form
 {
     private readonly Timer _clockTimer;
     private readonly Label _clockLabel;
