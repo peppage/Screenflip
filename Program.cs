@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Svg;
 
@@ -188,7 +186,7 @@ internal sealed class MainForm : Form
             currentPrimary.Bounds.Width,
             currentPrimary.Bounds.Height);
 
-        SetPrimaryMonitor(otherScreen.DeviceName);
+        Monitors.SetPrimary(otherScreen.DeviceName);
 
         if (_overlayCheckBox.Checked)
         {
@@ -210,7 +208,7 @@ internal sealed class MainForm : Form
             var original = File.ReadAllText(StateFile).Trim();
             if (!string.IsNullOrEmpty(original))
             {
-                SetPrimaryMonitor(original);
+                Monitors.SetPrimary(original);
             }
             File.Delete(StateFile);
         }
@@ -345,139 +343,6 @@ internal sealed class MainForm : Form
     }
 
     #endregion icon drawing
-
-    #region Win32
-
-    [DllImport("user32.dll")]
-    private static extern int ChangeDisplaySettingsEx(string lpszDeviceName, ref DEVMODE lpDevMode, IntPtr hwnd, uint dwflags, IntPtr lParam);
-
-    [DllImport("user32.dll")]
-    private static extern int ChangeDisplaySettingsEx(string? lpszDeviceName, IntPtr lpDevMode, IntPtr hwnd, uint dwflags, IntPtr lParam);
-
-    [DllImport("user32.dll")]
-    private static extern bool EnumDisplayDevices(string? lpDevice, uint iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, uint dwFlags);
-
-    [DllImport("user32.dll")]
-    private static extern bool EnumDisplaySettings(string lpszDeviceName, int iModeNum, ref DEVMODE lpDevMode);
-
-    private const int ENUM_CURRENT_SETTINGS = -1;
-    private const uint CDS_SET_PRIMARY = 0x00000010;
-    private const uint CDS_UPDATEREGISTRY = 0x00000001;
-    private const uint CDS_NORESET = 0x10000000;
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    private struct DEVMODE
-    {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string dmDeviceName;
-
-        public short dmSpecVersion;
-        public short dmDriverVersion;
-        public short dmSize;
-        public short dmDriverExtra;
-        public int dmFields;
-        public int dmPositionX;
-        public int dmPositionY;
-        public int dmDisplayOrientation;
-        public int dmDisplayFixedOutput;
-        public short dmColor;
-        public short dmDuplex;
-        public short dmYResolution;
-        public short dmTTOption;
-        public short dmCollate;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string dmFormName;
-
-        public short dmLogPixels;
-        public int dmBitsPerPel;
-        public int dmPelsWidth;
-        public int dmPelsHeight;
-        public int dmDisplayFlags;
-        public int dmDisplayFrequency;
-        public int dmICMMethod;
-        public int dmICMIntent;
-        public int dmMediaType;
-        public int dmDitherType;
-        public int dmReserved1;
-        public int dmReserved2;
-        public int dmPanningWidth;
-        public int dmPanningHeight;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    private struct DISPLAY_DEVICE
-    {
-        public int cb;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string DeviceName;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string DeviceString;
-
-        public int StateFlags;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string DeviceID;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string DeviceKey;
-    }
-
-    private static void SetPrimaryMonitor(string primaryDeviceName)
-    {
-        var devices = new List<(string name, DEVMODE mode)>();
-        uint deviceIdx = 0;
-
-        var displayDevice = new DISPLAY_DEVICE();
-        displayDevice.cb = Marshal.SizeOf(displayDevice);
-
-        while (EnumDisplayDevices(null, deviceIdx, ref displayDevice, 0))
-        {
-            var devMode = new DEVMODE();
-            devMode.dmSize = (short)Marshal.SizeOf(devMode);
-
-            if (EnumDisplaySettings(displayDevice.DeviceName, ENUM_CURRENT_SETTINGS, ref devMode))
-            {
-                devices.Add((displayDevice.DeviceName, devMode));
-            }
-
-            deviceIdx++;
-            displayDevice.cb = Marshal.SizeOf(displayDevice);
-        }
-
-        var targetDevice = devices.FirstOrDefault(d => d.name == primaryDeviceName);
-        if (targetDevice.name == null)
-        {
-            // Primary monitor not in our device list, bail out.
-            return;
-        }
-
-        var offsetX = -targetDevice.mode.dmPositionX;
-        var offsetY = -targetDevice.mode.dmPositionY;
-
-        foreach (var (name, mode) in devices)
-        {
-            var devMode = mode;
-            devMode.dmPositionX += offsetX;
-            devMode.dmPositionY += offsetY;
-            devMode.dmFields = 0x00000020; // DM_POSITION
-
-            uint flags = CDS_UPDATEREGISTRY | CDS_NORESET;
-            if (name == primaryDeviceName)
-            {
-                flags |= CDS_SET_PRIMARY;
-            }
-
-            _ = ChangeDisplaySettingsEx(name, ref devMode, IntPtr.Zero, flags, IntPtr.Zero);
-        }
-
-        // Apply all staged changes, use this version to set lpDevMode to NULL
-        _ = ChangeDisplaySettingsEx(null, IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero);
-    }
-
-    #endregion Win32
 }
 
 /// <summary>
