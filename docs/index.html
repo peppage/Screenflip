@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ScreenFlip - Flip your primary monitor for gaming</title>
-    <meta name="description" content="ScreenFlip makes your OLED the primary display for fullscreen gaming and dims the other screen. One click in, one click out. Free, open source, Windows.">
+    <meta name="description" content="ScreenFlip makes your OLED the primary display for fullscreen gaming and dims the other screen. One click swap. Free, open source, Windows.">
     <style>
         :root {
             --accent: #0000cc;
@@ -195,7 +195,7 @@
         <!-- Hero -->
         <p class="badge">Free &amp; open source · Windows</p>
         <h1>Flip to your OLED.<br><span class="flipword">Flip</span> back when you're done.</h1>
-        <p>ScreenFlip makes your OLED the primary display for fullscreen gaming and dims the other screen. One click in, one click out. No settings menus to dig through.</p>
+        <p>ScreenFlip makes your OLED the primary display for fullscreen gaming and dims the other screen. One to swap! No settings menus to dig through.</p>
         <p class="cta">
             <a class="primary" href="https://github.com/peppage/Screenflip/releases"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v9m0 0L4.5 7.5M8 11l3.5-3.5M2 14h12" /></svg>Download for Windows</a>
             <a href="#how">See how it works</a>
@@ -204,7 +204,7 @@
         <table class="realapp">
             <tr>
                 <td><img src="screenflip-example.png" alt="The ScreenFlip app window: a status line reading Inactive, an Enable button, and a checkbox to show an overlay on the inactive monitor." loading="lazy"></td>
-                <td><p class="cap"><b>Yep, that's the whole app.</b> One button, one checkbox. It lives in your system tray and stays out of the way.</p></td>
+                <td><p class="cap"><b>Yep, that's it!</b> One button, one checkbox. It lives in your system tray and stays out of the way.</p></td>
             </tr>
         </table>
 
@@ -261,7 +261,7 @@
             <table class="list">
                 <tr>
                     <td class="k"><h3>Instant primary swap</h3></td>
-                    <td><p>Makes your OLED the primary display with one click, using native Windows display APIs. Fullscreen games and overlays land where you want them.</p></td>
+                    <td><p>Makes your OLED the primary display with one click, using native Windows display APIs.</p></td>
                 </tr>
                 <tr>
                     <td class="k"><h3>Dim the other screen</h3></td>
@@ -269,7 +269,7 @@
                 </tr>
                 <tr>
                     <td class="k"><h3>Flip on, flip off</h3></td>
-                    <td><p>Enable to enter game mode; enable again to put everything back exactly as it was. Same window, same button. Just a toggle.</p></td>
+                    <td><p>Enable to enter game mode; enable again to put everything back exactly as it was.</p></td>
                 </tr>
                 <tr>
                     <td class="k"><h3>Lives in the tray</h3></td>
@@ -305,14 +305,14 @@
                         <span class="num">2</span>
                         <div>
                             <h3>Play on your OLED</h3>
-                            <p>Games, launchers, and overlays all land on the right display. The dimmed second monitor stays quietly out of view.</p>
+                            <p>Games, launchers, and overlays all open on OLED. The second monitor is dimmed and can ignored or carefully viewed if needed.</p>
                         </div>
                     </div>
                     <div class="step">
                         <span class="num">3</span>
                         <div>
                             <h3>Hit Enable again to flip back</h3>
-                            <p>Done for the night? One more click restores your primary monitor and clears the overlay. Everything's back to normal.</p>
+                            <p>Session over? One more click restores your primary monitor and clears the overlay. Everything's back to normal.</p>
                         </div>
                     </div>
                 </div>
@@ -367,7 +367,7 @@
 </div>
 
 <script>
-    // Signature: flip the whole page between desktop and game mode.
+    // flip the whole page between desktop and game mode.
     (function () {
         var body = document.body;
         var btn = document.getElementById('flipBtn');
